@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 760" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6b79"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1180" height="760" fill="#ffffff"/>
+
+  <!-- Outer region boundary -->
+  <rect x="20" y="20" width="1140" height="720" rx="14" fill="#fbfcfd" stroke="#c7d0d8" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="40" y="46" font-size="14" font-weight="600" fill="#5b6b79">AWS · eu-west-2 (London) — VPC-only, no NAT/internet egress, customer-managed KMS everywhere</text>
+
+  <!-- ============ SECTION 1: Ingestion pipeline ============ -->
+  <text x="50" y="86" font-size="15" font-weight="700" fill="#232f3e">1 · Ingestion pipeline</text>
+
+  <!-- S3 raw bucket -->
+  <g transform="translate(50,105)">
+    <rect width="92" height="92" rx="10" fill="#7AA116"/>
+    <path d="M46 20 c-13 0-22 6-22 12 v24 c0 6 9 12 22 12 s22-6 22-12 V32 c0-6-9-12-22-12z" fill="none" stroke="#fff" stroke-width="3"/>
+    <ellipse cx="46" cy="32" rx="22" ry="8" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="46" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">Amazon S3</text>
+    <text x="46" y="128" text-anchor="middle" font-size="11" fill="#5b6b79">raw/ bucket</text>
+  </g>
+
+  <!-- EventBridge -->
+  <g transform="translate(215,105)">
+    <rect width="92" height="92" rx="10" fill="#E7157B"/>
+    <circle cx="46" cy="46" r="22" fill="none" stroke="#fff" stroke-width="3"/>
+    <circle cx="46" cy="46" r="7" fill="#fff"/>
+    <text x="46" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">EventBridge</text>
+    <text x="46" y="128" text-anchor="middle" font-size="11" fill="#5b6b79">object-created rule</text>
+  </g>
+
+  <!-- Step Functions container -->
+  <g transform="translate(380,90)">
+    <rect width="560" height="130" rx="12" fill="#fff5eb" stroke="#ED7100" stroke-width="1.5"/>
+    <text x="16" y="22" font-size="13" font-weight="700" fill="#ED7100">Step Functions — 4 Lambdas in sequence</text>
+
+    <!-- step 1 -->
+    <g transform="translate(20,40)">
+      <rect width="110" height="72" rx="9" fill="#ED7100"/>
+      <path d="M30 55 L48 18 L58 18 L44 45 L60 45 L36 62 Z" fill="#fff"/>
+      <text x="55" y="90" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">extraction</text>
+      <text x="55" y="103" text-anchor="middle" font-size="9.5" fill="#5b6b79">Textract OCR</text>
+    </g>
+    <line x1="132" y1="76" x2="150" y2="76" stroke="#c9884a" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- step 2 -->
+    <g transform="translate(152,40)">
+      <rect width="110" height="72" rx="9" fill="#ED7100"/>
+      <path d="M30 55 L48 18 L58 18 L44 45 L60 45 L36 62 Z" fill="#fff"/>
+      <text x="55" y="90" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">chunk_embed</text>
+      <text x="55" y="103" text-anchor="middle" font-size="9.5" fill="#5b6b79">Bedrock Titan</text>
+    </g>
+    <line x1="264" y1="76" x2="282" y2="76" stroke="#c9884a" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- step 3 -->
+    <g transform="translate(284,40)">
+      <rect width="110" height="72" rx="9" fill="#ED7100"/>
+      <path d="M30 55 L48 18 L58 18 L44 45 L60 45 L36 62 Z" fill="#fff"/>
+      <text x="55" y="90" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">field_extraction</text>
+      <text x="55" y="103" text-anchor="middle" font-size="9.5" fill="#5b6b79">Bedrock Claude</text>
+    </g>
+    <line x1="396" y1="76" x2="414" y2="76" stroke="#c9884a" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- step 4 -->
+    <g transform="translate(416,40)">
+      <rect width="110" height="72" rx="9" fill="#ED7100"/>
+      <path d="M30 55 L48 18 L58 18 L44 45 L60 45 L36 62 Z" fill="#fff"/>
+      <text x="55" y="90" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">store_results</text>
+      <text x="55" y="103" text-anchor="middle" font-size="9.5" fill="#5b6b79">writes final row</text>
+    </g>
+  </g>
+
+  <!-- arrows: S3 -> EventBridge -> Step Functions -->
+  <line x1="142" y1="151" x2="213" y2="151" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="307" y1="151" x2="378" y2="151" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ Aurora (shared) ============ -->
+  <g transform="translate(534,300)">
+    <rect width="112" height="100" rx="10" fill="#3B48CC"/>
+    <path d="M20 30 a36 12 0 1 0 72 0 a36 12 0 1 0 -72 0" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M20 30 v34 a36 12 0 0 0 72 0 v-34" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M20 47 a36 12 0 0 0 72 0" fill="none" stroke="#fff" stroke-width="3"/>
+    <text x="56" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">Aurora PostgreSQL</text>
+    <text x="56" y="136" text-anchor="middle" font-size="11" fill="#5b6b79">Serverless v2 + pgvector</text>
+  </g>
+
+  <!-- Step Functions -> Aurora -->
+  <line x1="660" y1="220" x2="606" y2="298" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ SECTION 2: Query path ============ -->
+  <text x="50" y="470" font-size="15" font-weight="700" fill="#232f3e">2 · Query &amp; UI path</text>
+
+  <!-- CloudFront + S3 frontend -->
+  <g transform="translate(50,490)">
+    <rect width="112" height="100" rx="10" fill="#8C4FFF"/>
+    <circle cx="56" cy="46" r="26" fill="none" stroke="#fff" stroke-width="3"/>
+    <circle cx="56" cy="46" r="10" fill="none" stroke="#fff" stroke-width="3"/>
+    <line x1="56" y1="20" x2="56" y2="72" stroke="#fff" stroke-width="2"/>
+    <line x1="30" y1="46" x2="82" y2="46" stroke="#fff" stroke-width="2"/>
+    <text x="56" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">CloudFront + S3</text>
+    <text x="56" y="136" text-anchor="middle" font-size="11" fill="#5b6b79">React frontend</text>
+  </g>
+
+  <!-- API Gateway (+ Cognito badge) -->
+  <g transform="translate(245,490)">
+    <rect width="112" height="100" rx="10" fill="#E7157B"/>
+    <path d="M28 66 L56 24 L84 66 Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+    <line x1="40" y1="66" x2="72" y2="66" stroke="#fff" stroke-width="3"/>
+    <text x="56" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">API Gateway</text>
+    <text x="56" y="136" text-anchor="middle" font-size="11" fill="#5b6b79">REST API</text>
+    <!-- Cognito badge -->
+    <g transform="translate(78,-14)">
+      <rect width="46" height="46" rx="8" fill="#DD344C"/>
+      <path d="M23 12 c-7 0-12 4-12 8 v6 c0 8 6 14 12 16 c6-2 12-8 12-16 v-6 c0-4-5-8-12-8z" fill="none" stroke="#fff" stroke-width="2.5"/>
+    </g>
+    <text x="101" y="46" text-anchor="middle" font-size="9" fill="#5b6b79">Cognito</text>
+  </g>
+
+  <!-- Lambda query_api -->
+  <g transform="translate(440,490)">
+    <rect width="112" height="100" rx="10" fill="#ED7100"/>
+    <path d="M40 70 L62 22 L74 22 L56 58 L76 58 L46 78 Z" fill="#fff"/>
+    <text x="56" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="#232f3e">Lambda</text>
+    <text x="56" y="136" text-anchor="middle" font-size="11" fill="#5b6b79">query_api (list/get/ask)</text>
+  </g>
+
+  <!-- arrows: frontend -> api gw -> lambda -> aurora -->
+  <line x1="164" y1="540" x2="243" y2="540" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="359" y1="540" x2="438" y2="540" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="552" y1="520" x2="590" y2="404" stroke="#5b6b79" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ SECTION 3: Cross-cutting security/ML ============ -->
+  <g transform="translate(700,490)">
+    <rect width="440" height="180" rx="12" fill="#fdf5f5" stroke="#DD344C" stroke-width="1.5"/>
+    <text x="16" y="24" font-size="13" font-weight="700" fill="#DD344C">Cross-cutting</text>
+
+    <!-- KMS -->
+    <g transform="translate(20,40)">
+      <rect width="70" height="70" rx="9" fill="#DD344C"/>
+      <circle cx="27" cy="35" r="13" fill="none" stroke="#fff" stroke-width="3"/>
+      <line x1="38" y1="46" x2="58" y2="54" stroke="#fff" stroke-width="3"/>
+      <text x="35" y="88" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">KMS</text>
+      <text x="35" y="100" text-anchor="middle" font-size="9" fill="#5b6b79">CMK, all data</text>
+    </g>
+
+    <!-- Secrets Manager -->
+    <g transform="translate(120,40)">
+      <rect width="70" height="70" rx="9" fill="#DD344C"/>
+      <rect x="18" y="30" width="34" height="26" rx="4" fill="none" stroke="#fff" stroke-width="3"/>
+      <path d="M24 30 v-8 a11 11 0 0 1 22 0 v8" fill="none" stroke="#fff" stroke-width="3"/>
+      <text x="35" y="88" text-anchor="middle" font-size="9.5" font-weight="600" fill="#232f3e">Secrets Mgr</text>
+      <text x="35" y="100" text-anchor="middle" font-size="9" fill="#5b6b79">DB creds</text>
+    </g>
+
+    <!-- Textract -->
+    <g transform="translate(220,40)">
+      <rect width="70" height="70" rx="9" fill="#01A88D"/>
+      <rect x="17" y="17" width="36" height="36" rx="4" fill="none" stroke="#fff" stroke-width="3"/>
+      <line x1="23" y1="27" x2="47" y2="27" stroke="#fff" stroke-width="2.5"/>
+      <line x1="23" y1="35" x2="47" y2="35" stroke="#fff" stroke-width="2.5"/>
+      <line x1="23" y1="43" x2="39" y2="43" stroke="#fff" stroke-width="2.5"/>
+      <text x="35" y="88" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">Textract</text>
+      <text x="35" y="100" text-anchor="middle" font-size="9" fill="#5b6b79">OCR engine</text>
+    </g>
+
+    <!-- Bedrock -->
+    <g transform="translate(320,40)">
+      <rect width="70" height="70" rx="9" fill="#01A88D"/>
+      <circle cx="35" cy="35" r="17" fill="none" stroke="#fff" stroke-width="3"/>
+      <circle cx="35" cy="35" r="5" fill="#fff"/>
+      <text x="35" y="88" text-anchor="middle" font-size="10.5" font-weight="600" fill="#232f3e">Bedrock</text>
+      <text x="35" y="100" text-anchor="middle" font-size="9" fill="#5b6b79">Titan + Claude</text>
+    </g>
+
+    <text x="20" y="150" font-size="10.5" fill="#5b6b79">All traffic to these services stays on VPC interface endpoints — no NAT, no public internet.</text>
+  </g>
+
+  <!-- theme-neutral border -->
+  <rect x="0.5" y="0.5" width="1179" height="759" fill="none" stroke="#e2e8ee" stroke-width="1"/>
+</svg>

@@ -14,21 +14,20 @@ contract silently auto-renews.
 Built AWS-native and single-region (**eu-west-2 / London**) throughout,
 for teams that need to keep contract data verifiably in-region.
 
-## Pipeline
+## Architecture
 
-```
-S3 (raw/) --> EventBridge --> Step Functions
-                                  |
-                                  v
-                 1. extraction         Textract OCR -> plain text in S3
-                 2. chunk_embed        chunk text, embed (Bedrock Titan), store in pgvector
-                 3. field_extraction   vector-search the relevant chunks, extract fields (Bedrock Claude)
-                 4. store_results      write everything to the contracts table
-```
+![Architecture diagram](docs/architecture.svg)
 
-Query side: API Gateway (Cognito-authenticated) -> Lambda -> Aurora, plus
-a per-contract `/ask` endpoint that does the same retrieve-then-answer
-pattern over that contract's own chunks.
+A PDF lands in the raw S3 bucket, which fires an EventBridge rule that
+starts a Step Functions execution running four Lambdas in sequence —
+Textract OCR, chunk + embed (Bedrock Titan), field extraction (Bedrock
+Claude), then a final write — into Aurora PostgreSQL Serverless v2 with
+pgvector. The frontend (CloudFront + S3) talks to that same Aurora
+database through a Cognito-authenticated API Gateway and a `query_api`
+Lambda, including a per-contract `/ask` endpoint that does the same
+retrieve-then-answer pattern over that contract's own chunks. Everything
+sits inside one VPC in eu-west-2 with no NAT/internet egress, and KMS +
+Secrets Manager cover encryption and credentials throughout.
 
 ## Why these choices
 
